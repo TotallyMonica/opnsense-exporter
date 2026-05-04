@@ -1,7 +1,6 @@
 package opnsense
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -10,8 +9,8 @@ type KeaDhcpv4LeasesRow struct {
 	Address              string `json:"address"`
 	Hwaddr               string `json:"hwaddr"`
 	ClientId             string `json:"client_id"`
-	ValidLifetime        string `json:"valid_lifetime"`
-	Expiration           string `json:"expire"`
+	ValidLifetime        int    `json:"valid_lifetime"`
+	Expiration           int    `json:"expire"`
 	InterfaceDescription string `json:"if_descr"`
 	InterfaceName        string `json:"if_name"`
 	MacInfo              string `json:"mac_info"`
@@ -21,8 +20,8 @@ type KeaDhcpv4LeasesRow struct {
 	FqdnReceived         string `json:"fqdn_rev"`
 	State                string `json:"state"`
 	UserContext          string `json:"user_context"`
-	SubnetId             string `json:"subnet_id"`
-	PoolId               string `json:"pool_id"`
+	SubnetId             int    `json:"subnet_id"`
+	PoolId               int    `json:"pool_id"`
 }
 
 type KeaDhcpv4LeasesResponse struct {
@@ -76,22 +75,8 @@ func parseDHCPv4Leases(response KeaDhcpv4LeasesResponse) (KeaDhcpv4Leases, *APIC
 			data.ReservedLeaseCount[row.InterfaceName] += 1
 		}
 
-		expiration, err := strconv.Atoi(row.Expiration)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv4",
-				Message:    "expiration time is not an integer",
-				StatusCode: 0,
-			}
-		}
-		lifetime, err := strconv.Atoi(row.ValidLifetime)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv4",
-				Message:    "valid lifetime is not an integer",
-				StatusCode: 0,
-			}
-		}
+		expiration := row.Expiration
+		lifetime := row.ValidLifetime
 
 		// Add the information in
 		data.Leases = append(data.Leases, KeaDhcpv4Lease{

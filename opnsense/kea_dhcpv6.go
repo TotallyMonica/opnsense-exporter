@@ -1,7 +1,6 @@
 package opnsense
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -10,8 +9,8 @@ type KeaDhcpv6LeasesRow struct {
 	Address               string `json:"address"`
 	Hwaddr                string `json:"hwaddr"`
 	Duid                  string `json:"duid"`
-	ValidLifetime         string `json:"valid_lifetime"`
-	Expiration            string `json:"expire"`
+	ValidLifetime         int    `json:"valid_lifetime"`
+	Expiration            int    `json:"expire"`
 	InterfaceDescription  string `json:"if_descr"`
 	InterfaceName         string `json:"if_name"`
 	IsReserved            string `json:"is_reserved"`
@@ -22,9 +21,9 @@ type KeaDhcpv6LeasesRow struct {
 	UserContext           string `json:"user_context"`
 	SubnetId              string `json:"subnet_id"`
 	PoolId                string `json:"pool_id"`
-	PreferredLifetime     string `json:"pref_lifetime"`
+	PreferredLifetime     int    `json:"pref_lifetime"`
 	Iaid                  string `json:"iaid"`
-	PrefixLength          string `json:"prefix_len"`
+	PrefixLength          int    `json:"prefix_len"`
 	HardwareType          string `json:"hwtype"`
 	HardwareAddressSource string `json:"hwaddr_source"`
 }
@@ -82,38 +81,10 @@ func parseDHCPv6Leases(leases KeaDhcpv6LeasesResponse) (KeaDhcpv6Leases, *APICal
 			data.ReservedLeaseCount[row.InterfaceName] += 1
 		}
 
-		expiration, err := strconv.Atoi(row.Expiration)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv6",
-				Message:    "expiration time is not an integer",
-				StatusCode: 0,
-			}
-		}
-		lifetime, err := strconv.Atoi(row.ValidLifetime)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv6",
-				Message:    "valid lifetime is not an integer",
-				StatusCode: 0,
-			}
-		}
-		preferredLifetime, err := strconv.Atoi(row.PreferredLifetime)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv6",
-				Message:    "preferred lifetime is not an integer",
-				StatusCode: 0,
-			}
-		}
-		prefixLength, err := strconv.Atoi(row.PrefixLength)
-		if err != nil {
-			return data, &APICallError{
-				Endpoint:   "keaDhcpv6",
-				Message:    "prefix length is not an integer",
-				StatusCode: 0,
-			}
-		}
+		expiration := row.Expiration
+		lifetime := row.ValidLifetime
+		preferredLifetime := row.PreferredLifetime
+		prefixLength := row.PrefixLength
 
 		// Add the information in
 		data.Leases = append(data.Leases, KeaDhcpv6Lease{
